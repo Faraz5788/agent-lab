@@ -63,7 +63,12 @@ export const useAuth = create<AuthState>((set, get) => ({
 
   sendMagicLink: async (email, displayName) => {
     if (!supabase) throw new Error('Cloud sync is not configured')
-    const redirect = window.location.origin + window.location.pathname
+    // Carry any pending family invite inside the link, in case it opens in another browser.
+    let join: string | null = null
+    try {
+      join = localStorage.getItem(PENDING_JOIN)
+    } catch { /* ignore */ }
+    const redirect = window.location.origin + window.location.pathname + (join ? `?join=${encodeURIComponent(join)}` : '')
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: { emailRedirectTo: redirect, data: { display_name: displayName.trim() } },

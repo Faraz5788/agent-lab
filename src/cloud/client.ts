@@ -7,7 +7,10 @@ const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string | undefined
 export const supabase: SupabaseClient | null =
   url && key
     ? createClient(url, key, {
-        auth: { flowType: 'pkce', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+        // Implicit flow: the email link carries the session itself, so it works in
+        // whichever browser opens it (e.g. Gmail's in-app browser). PKCE would require
+        // the link to open in the same browser that requested it.
+        auth: { flowType: 'implicit', persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
       })
     : null
 

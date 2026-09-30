@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { useAuth, rememberJoinCode } from '@/cloud/auth'
 import { cloudEnabled } from '@/cloud/client'
+import { AUTH_ERROR_KEY } from '@/cloud/redirect'
 import { Icon } from '@/components/ui/Icon'
 import { Button } from '@/components/ui/primitives'
 import { Logo } from '@/components/layout/Logo'
@@ -23,7 +24,15 @@ export function AuthGate({ children }: { children: ReactNode }) {
   const [name, setName] = useState('')
   const [sent, setSent] = useState(false)
   const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(() => {
+    try {
+      const e = sessionStorage.getItem(AUTH_ERROR_KEY)
+      sessionStorage.removeItem(AUTH_ERROR_KEY)
+      return e
+    } catch {
+      return null
+    }
+  })
   const joinCode = joinCodeFromUrl()
 
   useEffect(() => {
@@ -62,7 +71,8 @@ export function AuthGate({ children }: { children: ReactNode }) {
             <div className="text-center animate-fade-up">
               <span className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-brand text-white"><Icon name="mail" size={26} /></span>
               <h1 className="font-display text-2xl font-bold">Check your email</h1>
-              <p className="mt-2 text-sm text-muted">We sent a sign-in link to <span className="font-semibold text-fg">{email}</span>. Open it on this device to continue.</p>
+              <p className="mt-2 text-sm text-muted">We sent a sign-in link to <span className="font-semibold text-fg">{email}</span>. Tap it on this phone or computer — it’s fine if it opens in a different browser.</p>
+              <p className="mt-2 text-xs text-subtle">Each link works once. If you ask for another, use the newest email.</p>
               <p className="mt-4 text-xs text-subtle">Nothing there? Check spam, or <button className="font-semibold text-accent underline" onClick={() => setSent(false)}>try again</button>.</p>
             </div>
           ) : (
